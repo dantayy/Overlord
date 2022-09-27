@@ -1,0 +1,23 @@
+// Copyright Epic Games, Inc. All Rights Reserved.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/GameModeBase.h"
+#include "OverlordGameModeBase.generated.h"
+
+/**
+ * 
+ */
+UCLASS()
+class OVERLORD_API AOverlordGameModeBase : public AGameModeBase
+{
+	GENERATED_BODY()
+
+	virtual void StartPlay() override;
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<FString> Levels;
+	
+};
