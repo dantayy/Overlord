@@ -53,7 +53,7 @@ protected:
 	float SplinePos = 0.0f;
 
 	// ammount to increment spline position by every tick (aka spline speed)
-	float SplineSpeed = 0.0001f;
+	float SplineSpeed = 5.0f;
 
 public:
 	// Called every frame

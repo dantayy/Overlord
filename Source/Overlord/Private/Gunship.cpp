@@ -27,7 +27,10 @@ AGunship::AGunship()
 
 	// set up the spline component
 	SplineComponent = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
-	SplineComponent->AttachToComponent(VisualMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	//SplineComponent->AttachToComponent(VisualMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+	// gunship is not hostile, default the flag to false
+	Hostile = false;
 }
 
 void AGunship::BeginPlay()
@@ -47,14 +50,33 @@ void AGunship::Tick(float DeltaTime)
 
 	// move our gunship along the currently set spline
 	if (SplineComponent->GetSplineLength() != 0.0f) {
+		// log spline length
+		//if (GEngine) {
+		//	// Display a debug message for five seconds
+		//	// The -1 "Key" value argument prevents the message from being updated or refreshed
+		//	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, FString::Printf(TEXT("Spline Length: %f"), SplineComponent->GetSplineLength()));
+		//}
 		SplinePos += SplineSpeed;
-		if (SplinePos >= 1.0f) {
+		if (SplinePos >= SplineComponent->GetSplineLength()) {
 			SplinePos = 0.0f;
 		}
+		// log spline position
+		//if (GEngine) {
+		//	// Display a debug message for five seconds
+		//	// The -1 "Key" value argument prevents the message from being updated or refreshed
+		//	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, FString::Printf(TEXT("SplinePos: %f"), SplinePos));
+		//}
+		FVector SplinePoint = SplineComponent->GetLocationAtDistanceAlongSpline(SplinePos, ESplineCoordinateSpace::World);
+		// log point along spline
+		//if (GEngine) {
+		//	// Display a debug message for five seconds
+		//	// The -1 "Key" value argument prevents the message from being updated or refreshed
+		//	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, FString::Printf(TEXT("X: %f, Y: %f, Z: %f"), SplinePoint.X, SplinePoint.Y, SplinePoint.Z));
+		//}
 		// location
-		VisualMesh->SetRelativeLocation(SplineComponent->GetLocationAtDistanceAlongSpline(SplineComponent->GetSplineLength() * SplinePos, ESplineCoordinateSpace::World));
+		VisualMesh->SetWorldLocation(SplinePoint);
 		// rotation
-		VisualMesh->SetWorldRotation(SplineComponent->GetRotationAtDistanceAlongSpline(SplineComponent->GetSplineLength() * SplinePos, ESplineCoordinateSpace::World));
+		VisualMesh->SetWorldRotation(SplineComponent->GetRotationAtDistanceAlongSpline(SplinePos, ESplineCoordinateSpace::World));
 	}
 
 	// Zoom in if ZoomIn button is down, zoom back out if it's not
