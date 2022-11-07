@@ -12,7 +12,7 @@ ATarget::ATarget()
 	// create the visual mesh, set it to simulate physics, and attach the OnHit function to collisions
 	VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	VisualMesh->SetupAttachment(RootComponent);
-	VisualMesh->OnComponentHit.AddDynamic(this, &ATarget::OnHit);
+	VisualMesh->OnComponentBeginOverlap.AddDynamic(this, &ATarget::OnOverlap);
 
 	// set a default mesh of a target
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"));
@@ -21,6 +21,8 @@ ATarget::ATarget()
 		VisualMesh->SetStaticMesh(CubeVisualAsset.Object);
 		VisualMesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 	}
+
+	VisualMesh->SetSimulatePhysics(true);
 }
 
 // Called when the game starts or when spawned
@@ -28,6 +30,8 @@ void ATarget::BeginPlay()
 {
 	// this is needed for destroy calls to work
 	Super::BeginPlay();
+
+	VisualMesh->OnComponentHit.AddDynamic(this, &ATarget::OnHit);
 }
 
 // Called every frame
@@ -39,7 +43,7 @@ void ATarget::Tick(float DeltaTime)
 void ATarget::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
 	// check for collision with Projectiles
-	if (OtherActor->GetClass()->GetName() == "Projectile") {
+	if (OtherActor->GetClass()->IsChildOf(AProjectile::StaticClass())) {
 		// debug logging Projectile hit
 		if (GEngine) {
 			// Display a debug message for five seconds
@@ -50,17 +54,41 @@ void ATarget::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 		AProjectile* HitProjectile = static_cast<AProjectile*>(OtherActor);
 		// reduce health by ammount of damage the Projectile provides
 		Health -= HitProjectile->Damage;
-		// destroy this object if it's health has reached 0
-		if (Health == 0) {
-			// debug logging Target destruction
-			if (GEngine) {
-				// Display a debug message for five seconds
-				// The -1 "Key" value argument prevents the message from being updated or refreshed
-				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Target destroyed by Projectile"));
-			}
-			// destroy the Target
-			Destroy();
+	}
+	else if (OtherActor->GetClass()->IsChildOf(AExplosion::StaticClass())) {
+		// debug logging Explosion hit
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Target hit by Explosion"));
 		}
+		AExplosion* HitExplosion = static_cast<AExplosion*>(OtherActor);
+		Health -= HitExplosion->Damage * (GetDistanceTo(HitExplosion) / HitExplosion->Radius);
+	}
+	// destroy this object if it's health has reached 0
+	if (Health <= 0) {
+		// debug logging Target destruction
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Target destroyed"));
+		}
+		// destroy the Target
+		Destroy();
+	}
+}
+
+void ATarget::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	if (OtherActor->GetClass()->IsChildOf(AExplosion::StaticClass())) {
+		// debug logging Explosion hit
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Target hit by Explosion"));
+		}
+		AExplosion* HitExplosion = static_cast<AExplosion*>(OtherActor);
+		Health -= HitExplosion->Damage * (GetDistanceTo(HitExplosion) / HitExplosion->Radius);
 	}
 }
 

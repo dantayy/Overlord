@@ -21,8 +21,6 @@ AProjectile::AProjectile()
 		CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 		// Set the sphere's collision profile name to "Projectile"
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
-		// Event called when component hits something
-		CollisionComponent->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 		// Set the sphere's initial collision radius
 		CollisionComponent->InitSphereRadius(15.0);
 		// Set the root component to be the collision component
@@ -72,6 +70,9 @@ void AProjectile::BeginPlay()
 {
 	// this is needed for destroy calls to work
 	Super::BeginPlay();	
+
+	// Event called when component hits something
+	CollisionComponent->OnComponentHit.AddDynamic(this, &AProjectile::OnHit);
 }
 
 // Called every frame
@@ -90,6 +91,15 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	}
 	// destroy this projectile
 	Destroy();
+	// spawn explosion if one has been attached to this object
+	if (ProjectileExplosion) {
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Spawn X: %f, Spawn Y: %f, Spawn Z: %f"), CollisionComponent->GetComponentLocation().X, CollisionComponent->GetComponentLocation().Y, CollisionComponent->GetComponentLocation().Z));
+		}
+		GetWorld()->SpawnActor<AExplosion>(ProjectileExplosion, CollisionComponent->GetComponentLocation(), CollisionComponent->GetComponentRotation());
+	}
 }
 
 void AProjectile::FireInDirection(const FVector& ShootDirection)

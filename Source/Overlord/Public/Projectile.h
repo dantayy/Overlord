@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
+#include "Explosion.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Projectile.generated.h"
 
@@ -37,6 +38,10 @@ public:
 	// Damage a projectile will do to a target on hit
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile)
 	uint8 Damage = 1;
+
+	// Explosion to be emitted on collision, leave empty if no explosion desired
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Explosion)
+	TSubclassOf<class AExplosion> ProjectileExplosion;
 
 protected:
 	// Called when the game starts or when spawned

@@ -5,11 +5,6 @@
 
 ABuilding::ABuilding()
 {
-	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-	VisualMesh->SetSimulatePhysics(true);
-
 	// set the default mesh of a Building
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> ConeVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cone.Shape_Cone"));
 	if (ConeVisualAsset.Succeeded())
