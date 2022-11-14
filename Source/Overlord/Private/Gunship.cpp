@@ -15,11 +15,7 @@ AGunship::AGunship()
 
 	// set up the camera in a position appropriate for the viewfinder of an AC-130
 	Viewfinder = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	//Viewfinder->SetupAttachment(VisualMesh); // don't think we need to do this when we're using AttachToComponent? probably redundant
-	//FAttachmentTransformRules AttachmentRules = FAttachmentTransformRules(EAttachmentRule::SnapToTarget, EAttachmentRule::KeepRelative, EAttachmentRule::KeepRelative, true); // this is no better than SnapToTargetNotIncludingScale
-	Viewfinder->AttachToComponent(VisualMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale); // scale is included in snap anyways???
-	//Viewfinder->SetWorldScale3D(FVector(1.0f, 1.0f, 1.0f)); // this did not help either!!!
-	//Viewfinder->SetRelativeLocation(FVector(0.0f, -550.0f, 0.0f)); // works when subclassing DefaultPawn and the camera isn't scaled by RootComponent
+	Viewfinder->SetupAttachment(VisualMesh); // don't think we need to do this when we're using AttachToComponent? probably redundant	Viewfinder->SetRelativeLocation(FVector(0.0f, -55.0f, 0.0f)); // have to use this when the camera inherits the VisualMesh's scaling as we subclass from Pawn instead
 	Viewfinder->SetRelativeLocation(FVector(0.0f, -55.0f, 0.0f)); // have to use this when the camera inherits the VisualMesh's scaling as we subclass from Pawn instead
 	FRotator ViewfinderRotation = GetActorRotation();
 	ViewfinderRotation.Add(0.0, -90.0, 0.0);
@@ -27,7 +23,11 @@ AGunship::AGunship()
 
 	// set up the spline component
 	SplineComponent = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
-	//SplineComponent->AttachToComponent(VisualMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	//SplineComponent->SetupAttachment(VisualMesh);
+
+	// scale the camera and spline back to their original sizes by dividing by visualmesh's scale
+	Viewfinder->SetWorldScale3D(FVector(1.0f, 1.0f, 1.0f) / FVector(30.0f, 10.0f, 10.0f));
+	//SplineComponent->SetWorldScale3D(FVector(1.0f, 1.0f, 1.0f) / FVector(30.0f, 10.0f, 10.0f));
 
 	// gunship is not hostile, default the flag to false
 	Hostile = false;
@@ -42,6 +42,8 @@ void AGunship::BeginPlay()
 	// Display a debug message for five seconds
 	// The -1 "Key" value argument prevents the message from being updated or refreshed
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using Gunship uwu"));
+
+	//SetInputMode(FInputModeGameAndUI());
 }
 
 void AGunship::Tick(float DeltaTime)

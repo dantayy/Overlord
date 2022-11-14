@@ -12,7 +12,6 @@ ATarget::ATarget()
 	// create the visual mesh, set it to simulate physics, and attach the OnHit function to collisions
 	VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	VisualMesh->SetupAttachment(RootComponent);
-	VisualMesh->OnComponentBeginOverlap.AddDynamic(this, &ATarget::OnOverlap);
 
 	// set a default mesh of a target
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"));
@@ -23,6 +22,7 @@ ATarget::ATarget()
 	}
 
 	VisualMesh->SetSimulatePhysics(true);
+	VisualMesh->SetGenerateOverlapEvents(true);
 }
 
 // Called when the game starts or when spawned
@@ -32,6 +32,7 @@ void ATarget::BeginPlay()
 	Super::BeginPlay();
 
 	VisualMesh->OnComponentHit.AddDynamic(this, &ATarget::OnHit);
+	VisualMesh->OnComponentBeginOverlap.AddDynamic(this, &ATarget::OnOverlap);
 }
 
 // Called every frame
@@ -55,16 +56,16 @@ void ATarget::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 		// reduce health by ammount of damage the Projectile provides
 		Health -= HitProjectile->Damage;
 	}
-	else if (OtherActor->GetClass()->IsChildOf(AExplosion::StaticClass())) {
-		// debug logging Explosion hit
-		if (GEngine) {
-			// Display a debug message for five seconds
-			// The -1 "Key" value argument prevents the message from being updated or refreshed
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Target hit by Explosion"));
-		}
-		AExplosion* HitExplosion = static_cast<AExplosion*>(OtherActor);
-		Health -= HitExplosion->Damage * (GetDistanceTo(HitExplosion) / HitExplosion->Radius);
-	}
+	//else if (OtherActor->GetClass()->IsChildOf(AExplosion::StaticClass())) {
+	//	// debug logging Explosion hit
+	//	if (GEngine) {
+	//		// Display a debug message for five seconds
+	//		// The -1 "Key" value argument prevents the message from being updated or refreshed
+	//		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Target hit by Explosion"));
+	//	}
+	//	AExplosion* HitExplosion = static_cast<AExplosion*>(OtherActor);
+	//	Health -= HitExplosion->Damage * (GetDistanceTo(HitExplosion) / HitExplosion->Radius);
+	//}
 	// destroy this object if it's health has reached 0
 	if (Health <= 0) {
 		// debug logging Target destruction
@@ -88,7 +89,36 @@ void ATarget::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherA
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Target hit by Explosion"));
 		}
 		AExplosion* HitExplosion = static_cast<AExplosion*>(OtherActor);
+		float DistanceFromExplosion = GetDistanceTo(HitExplosion);
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(TEXT("Distance from Explosion: %f"), DistanceFromExplosion));
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(TEXT("Explosion radius: %f"), HitExplosion->Radius));
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(TEXT("Proportional Damage: %f"), HitExplosion->Damage * (DistanceFromExplosion / HitExplosion->Radius)));
+		}
 		Health -= HitExplosion->Damage * (GetDistanceTo(HitExplosion) / HitExplosion->Radius);
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(TEXT("New current health: %f"), Health));
+		}
+	}
+	if (GEngine) {
+		// Display a debug message for five seconds
+		// The -1 "Key" value argument prevents the message from being updated or refreshed
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Purple, FString::Printf(TEXT("New current health: %f"), Health));
+	}
+	// destroy this object if it's health has reached 0
+	if (Health == 0) {
+		// debug logging Target destruction
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Target destroyed"));
+		}
+		// destroy the Target
+		Destroy();
 	}
 }
 

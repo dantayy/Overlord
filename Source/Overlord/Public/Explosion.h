@@ -27,7 +27,7 @@ public:
 
 	// radius of explosion collision sphere
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 Radius = 10;
+	float Radius = 400;
 
 	// ammount of damage dealt to targets in collision radius
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -35,7 +35,7 @@ public:
 
 	// duration of explosion particle effects
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	uint8 Duration = 3;
+	uint8 Duration = 4;
 
 protected:
 	// Called when the game starts or when spawned
@@ -52,4 +52,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	// function to be triggered when the visual/collision component is collided with
+	UFUNCTION()
+	void OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
+
+	// function to be triggered when the visual/collision component is overlapped
+	UFUNCTION()
+	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };
