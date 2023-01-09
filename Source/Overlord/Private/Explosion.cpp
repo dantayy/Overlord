@@ -18,6 +18,9 @@ AExplosion::AExplosion()
 	CollisionComponent->InitSphereRadius(Radius);
 	// enable overlap events for collision component
 	CollisionComponent->SetGenerateOverlapEvents(true);
+	// ignore other projectiles and explosions
+	CollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
+	CollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
 	// set collision component as root
 	RootComponent = CollisionComponent;
 	// start the particle effects
@@ -26,16 +29,16 @@ AExplosion::AExplosion()
 	if (ExplosionEffect) {
 		ExplosionEffect->Activate();
 	}
-
-	// set up collision handling
-	CollisionComponent->OnComponentHit.AddDynamic(this, &AExplosion::OnHit);
-	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AExplosion::OnOverlap);
 }
 
 // Called when the game starts or when spawned
 void AExplosion::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// set up collision handling
+	CollisionComponent->OnComponentHit.AddDynamic(this, &AExplosion::OnHit);
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AExplosion::OnOverlap);
 	
 	// make a timer that will destroy this explosion after the ammount of time specified by the member var passes
 	GetWorldTimerManager().SetTimer(ExplosionTimer, this, &AExplosion::EndExplosion, Duration, false);
@@ -55,23 +58,23 @@ void AExplosion::Tick(float DeltaTime)
 
 void AExplosion::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {	
-	// debug logging Explosion hit
-	if (GEngine) {
-		// Display a debug message for five seconds
-		// The -1 "Key" value argument prevents the message from being updated or refreshed
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Explosion Hit!"));
-	}
-	//EndExplosion();
+	//// debug logging Explosion hit
+	//if (GEngine) {
+	//	// Display a debug message for five seconds
+	//	// The -1 "Key" value argument prevents the message from being updated or refreshed
+	//	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Explosion Hit!"));
+	//}
+	////EndExplosion();
 }
 
 void AExplosion::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	// debug logging Explosion hit
-	if (GEngine) {
-		// Display a debug message for five seconds
-		// The -1 "Key" value argument prevents the message from being updated or refreshed
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Explosion overlap!"));
-	}
-	//EndExplosion();
+	//// debug logging Explosion hit
+	//if (GEngine) {
+	//	// Display a debug message for five seconds
+	//	// The -1 "Key" value argument prevents the message from being updated or refreshed
+	//	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("Explosion overlap!"));
+	//}
+	////EndExplosion();
 }
 

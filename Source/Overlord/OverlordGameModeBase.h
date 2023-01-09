@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+#include "Target.h"
 #include "OverlordGameModeBase.generated.h"
 
 /**
@@ -19,7 +21,13 @@ class OVERLORD_API AOverlordGameModeBase : public AGameModeBase
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<FString> Levels;
+	TArray<FName> Levels;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	uint8 LevelIterator = 0;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<ATarget*> HostileTargets;
 
 	/** Remove the current menu widget and create a new one from the specified class, if provided. */
 	UFUNCTION(BlueprintCallable, Category = "UMG Game")
@@ -29,6 +37,9 @@ protected:
 
 	/** Called when the game starts. */
 	virtual void BeginPlay() override;
+
+	/** Called when a member of HostileTargets is destroyed */
+	void HostileDestroyed(AActor* DestroyedActor);
 
 	/** The widget class we will use as our menu when the game starts. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UMG Game")

@@ -23,6 +23,7 @@ public:
 	UParticleSystemComponent* ExplosionEffect;
 
 	// collision component used to trigger damage, set up via set radius value
+	UPROPERTY(VisibleDefaultsOnly, Category = Explosion)
 	USphereComponent* CollisionComponent;
 
 	// radius of explosion collision sphere

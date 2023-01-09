@@ -36,4 +36,46 @@ void AOverlordGameModeBase::BeginPlay()
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Hello World, this is Overlord!"));
 
 	ChangeMenuWidget(StartingWidgetClass);
+
+    // create function delegate to bind to each hostile target's OnDestroyed event, hooking it to our HostileDestroyed handler
+    TScriptDelegate <FWeakObjectPtr> HostileDestroyedDelegate;
+    HostileDestroyedDelegate.BindUFunction(this, "HostileDestroyed");
+
+    // grab all targets in level
+    TArray<AActor*> TargetsInLevel;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATarget::StaticClass(), TargetsInLevel);
+
+    // iterate through targets to find hostiles
+    for (AActor* Target : TargetsInLevel) {
+        // cast back to target
+        ATarget* CastedTarget = Cast<ATarget>(Target);
+        // if hostile, add to member array and bind OnDestroy to our custom handler
+        if (CastedTarget->Hostile) {
+            HostileTargets.Add(CastedTarget);
+            CastedTarget->OnDestroyed.Add(HostileDestroyedDelegate);
+        }
+    }
+}
+
+void AOverlordGameModeBase::HostileDestroyed(AActor* DestroyedActor)
+{
+    // cast back to target
+    ATarget* CastedTarget = Cast<ATarget>(DestroyedActor);
+    // remove from array
+    HostileTargets.Remove(CastedTarget);
+    // check if level "complete"
+    if (HostileTargets.IsEmpty()) {
+        // iterate level iterator
+        LevelIterator++;
+        // temp implementation loops back to first level if at end of array
+        if (LevelIterator >= Levels.Num()) {
+            LevelIterator = 0;
+            // handle edge case of no stored levels
+            if (LevelIterator == Levels.Num()) {
+                return;
+            }
+        }
+        // open level with given name at index pointed to by level iterator
+        UGameplayStatics::OpenLevel(GetWorld(), Levels[LevelIterator]);
+    }
 }

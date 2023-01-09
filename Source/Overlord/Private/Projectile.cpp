@@ -9,11 +9,6 @@ AProjectile::AProjectile()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	// set up root component
-	if (!RootComponent)
-	{
-		RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("ProjectileSceneComponent"));
-	}
 	// set up collision component
 	if (!CollisionComponent)
 	{
@@ -21,11 +16,14 @@ AProjectile::AProjectile()
 		CollisionComponent = CreateDefaultSubobject<USphereComponent>(TEXT("SphereComponent"));
 		// Set the sphere's collision profile name to "Projectile"
 		CollisionComponent->BodyInstance.SetCollisionProfileName(TEXT("Projectile"));
+		// ignore other projectiles and explosions
+		CollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel1, ECollisionResponse::ECR_Ignore);
+		CollisionComponent->SetCollisionResponseToChannel(ECollisionChannel::ECC_GameTraceChannel2, ECollisionResponse::ECR_Ignore);
 		// Set the sphere's initial collision radius
 		CollisionComponent->InitSphereRadius(15.0);
-		// Set the root component to be the collision component
-		RootComponent = CollisionComponent;
 	}
+	// Set the root component to be the collision component
+	RootComponent = CollisionComponent;
 	// set up projectile movement component
 	if (!ProjectileMovementComponent) {
 		// Use this component ot drive this projectile's movement
@@ -47,7 +45,6 @@ AProjectile::AProjectile()
 		{
 			ProjectileMeshComponent->SetStaticMesh(ProjectileMesh.Object);
 		}
-
 	}
 
 	// set up material
@@ -89,6 +86,11 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 	{
 		OtherComponent->AddImpulseAtLocation(ProjectileMovementComponent->Velocity * 100.0f, Hit.ImpactPoint);
 	}
+	if (GEngine) {
+		// Display a debug message for five seconds
+		// The -1 "Key" value argument prevents the message from being updated or refreshed
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Destroying Projectile")));
+	}
 	// destroy this projectile
 	Destroy();
 	// spawn explosion if one has been attached to this object
@@ -96,7 +98,7 @@ void AProjectile::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, U
 		if (GEngine) {
 			// Display a debug message for five seconds
 			// The -1 "Key" value argument prevents the message from being updated or refreshed
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, FString::Printf(TEXT("Spawn X: %f, Spawn Y: %f, Spawn Z: %f"), CollisionComponent->GetComponentLocation().X, CollisionComponent->GetComponentLocation().Y, CollisionComponent->GetComponentLocation().Z));
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange, FString::Printf(TEXT("Spawn X: %f, Spawn Y: %f, Spawn Z: %f"), CollisionComponent->GetComponentLocation().X, CollisionComponent->GetComponentLocation().Y, CollisionComponent->GetComponentLocation().Z));
 		}
 		GetWorld()->SpawnActor<AExplosion>(ProjectileExplosion, CollisionComponent->GetComponentLocation(), CollisionComponent->GetComponentRotation());
 	}

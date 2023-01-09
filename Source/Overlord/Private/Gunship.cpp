@@ -41,7 +41,7 @@ void AGunship::BeginPlay()
 
 	// Display a debug message for five seconds
 	// The -1 "Key" value argument prevents the message from being updated or refreshed
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("We are using Gunship uwu"));
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("We are using Gunship uwu"));
 
 	//SetInputMode(FInputModeGameAndUI());
 }
@@ -121,7 +121,7 @@ void AGunship::Fire()
 		if (GEngine) {
 			// Display a debug message for five seconds
 			// The -1 "Key" value argument prevents the message from being updated or refreshed
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("Firing"));
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Firing"));
 		}
 		// Get the camera transform
 		FVector CameraLocation = Viewfinder->GetComponentLocation();
