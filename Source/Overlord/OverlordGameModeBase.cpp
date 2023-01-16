@@ -37,9 +37,15 @@ void AOverlordGameModeBase::BeginPlay()
 
 	ChangeMenuWidget(StartingWidgetClass);
 
-    // create function delegate to bind to each hostile target's OnDestroyed event, hooking it to our HostileDestroyed handler
-    TScriptDelegate <FWeakObjectPtr> HostileDestroyedDelegate;
-    HostileDestroyedDelegate.BindUFunction(this, "HostileDestroyed");
+    // determine which level we are starting on
+    LevelIterator = 0;
+    for (UINT8 i = 0; i < Levels.Num(); i++) {
+        FName LevelName = *GetLevel()->GetOuter()->GetName();
+        if (Levels[i] == LevelName) {
+            LevelIterator = i;
+            break;
+        }
+    }
 
     // grab all targets in level
     TArray<AActor*> TargetsInLevel;
@@ -52,7 +58,7 @@ void AOverlordGameModeBase::BeginPlay()
         // if hostile, add to member array and bind OnDestroy to our custom handler
         if (CastedTarget->Hostile) {
             HostileTargets.Add(CastedTarget);
-            CastedTarget->OnDestroyed.Add(HostileDestroyedDelegate);
+            CastedTarget->OnDestroyed.AddDynamic(this, &AOverlordGameModeBase::HostileDestroyed);
         }
     }
 }

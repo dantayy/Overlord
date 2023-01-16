@@ -39,6 +39,7 @@ protected:
 	virtual void BeginPlay() override;
 
 	/** Called when a member of HostileTargets is destroyed */
+	UFUNCTION()
 	void HostileDestroyed(AActor* DestroyedActor);
 
 	/** The widget class we will use as our menu when the game starts. */

@@ -32,6 +32,9 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// name of most recent projectile to hit target, used to prevent double-hit events
+	FString RecentProjectile = "";
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -45,6 +45,12 @@ void ATarget::Tick(float DeltaTime)
 
 void ATarget::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
 {
+	FString ProjectileName;
+	OtherActor->GetName(ProjectileName);
+	if (ProjectileName == RecentProjectile) {
+		return;
+	}
+	RecentProjectile = ProjectileName;
 	// check for collision with Projectiles
 	if (OtherActor->GetClass()->IsChildOf(AProjectile::StaticClass())) {
 		// debug logging Projectile hit
