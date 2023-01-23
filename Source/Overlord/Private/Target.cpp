@@ -2,6 +2,7 @@
 
 
 #include "Target.h"
+#include "Overlord/OverlordGameModeBase.h"
 
 // Sets default values
 ATarget::ATarget()
@@ -12,6 +13,9 @@ ATarget::ATarget()
 	// create the visual mesh, set it to simulate physics, and attach the OnHit function to collisions
 	VisualMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	VisualMesh->SetupAttachment(RootComponent);
+
+	// set up movement component
+	TargetMovement = CreateDefaultSubobject<UMovementComponent>(TEXT("Movement"));
 
 	// set a default mesh of a target
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"));
@@ -35,6 +39,13 @@ void ATarget::BeginPlay()
 	// set up collision handling
 	VisualMesh->OnComponentHit.AddDynamic(this, &ATarget::OnHit);
 	VisualMesh->OnComponentBeginOverlap.AddDynamic(this, &ATarget::OnOverlap);
+
+	// add to game mode's hostile tracker if target is hostile and we're in the right game mode
+	AOverlordGameModeBase* OverloardGM = Cast<AOverlordGameModeBase>(GetWorld()->GetAuthGameMode());
+	if (OverloardGM && Hostile) {
+		OverloardGM->HostileTargets.Add(this);
+		this->OnDestroyed.AddDynamic(OverloardGM, &AOverlordGameModeBase::HostileDestroyed);
+	}
 }
 
 // Called every frame

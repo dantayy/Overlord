@@ -21,12 +21,22 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* VisualMesh;
 
+	// component to allow targets to move
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	UMovementComponent* TargetMovement;
+
 	// health pool to be depleted by collisions with projectiles, destroy the target when 0
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
 	uint8 Health = 1;
 	// flag determining if target should count towards level completion (destroy hostiles == good, destroy non-hostiles == not good)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
 	bool Hostile = true;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
+	class UBehaviorTree* TargetTree;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
+	class ASmartObject* SmartObject;
 
 protected:
 	// Called when the game starts or when spawned

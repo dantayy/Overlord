@@ -46,21 +46,6 @@ void AOverlordGameModeBase::BeginPlay()
             break;
         }
     }
-
-    // grab all targets in level
-    TArray<AActor*> TargetsInLevel;
-    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ATarget::StaticClass(), TargetsInLevel);
-
-    // iterate through targets to find hostiles
-    for (AActor* Target : TargetsInLevel) {
-        // cast back to target
-        ATarget* CastedTarget = Cast<ATarget>(Target);
-        // if hostile, add to member array and bind OnDestroy to our custom handler
-        if (CastedTarget->Hostile) {
-            HostileTargets.Add(CastedTarget);
-            CastedTarget->OnDestroyed.AddDynamic(this, &AOverlordGameModeBase::HostileDestroyed);
-        }
-    }
 }
 
 void AOverlordGameModeBase::HostileDestroyed(AActor* DestroyedActor)

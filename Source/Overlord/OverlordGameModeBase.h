@@ -33,14 +33,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UMG Game")
 	void ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass);
 
+	/** Called when a member of HostileTargets is destroyed */
+	UFUNCTION()
+	void HostileDestroyed(AActor* DestroyedActor);
+
 protected:
 
 	/** Called when the game starts. */
 	virtual void BeginPlay() override;
-
-	/** Called when a member of HostileTargets is destroyed */
-	UFUNCTION()
-	void HostileDestroyed(AActor* DestroyedActor);
 
 	/** The widget class we will use as our menu when the game starts. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UMG Game")
