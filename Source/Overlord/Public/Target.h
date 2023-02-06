@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+//#include "GameFramework/NavMovementComponent.h"
+#include "TargetNavMovement.h"
 #include "Projectile.h"
 #include "Target.generated.h"
 
@@ -22,8 +24,10 @@ public:
 	UStaticMeshComponent* VisualMesh;
 
 	// component to allow targets to move
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	//UNavMovementComponent* TargetMovement;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	UMovementComponent* TargetMovement;
+	UTargetNavMovement* TargetMovement;
 
 	// health pool to be depleted by collisions with projectiles, destroy the target when 0
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
