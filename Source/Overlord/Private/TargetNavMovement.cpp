@@ -29,7 +29,7 @@ void UTargetNavMovement::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 	{
 		return;
 	}
-	FVector DesiredMovementThisFrame = RequestedVelocity.GetClampedToMaxSize(1.0f) * DeltaTime * 150.0f;
+	FVector DesiredMovementThisFrame = RequestedVelocity.GetClampedToMaxSize(1.0f) * DeltaTime * 1000.0f;
 
 	if (!DesiredMovementThisFrame.IsNearlyZero())
 	{
@@ -71,7 +71,7 @@ void UTargetNavMovement::RequestDirectMove(const FVector& MoveVelocity, bool bFo
 	RequestedVelocity = MoveVelocity;
 	bHasRequestedVelocity = true;
 	bRequestedMoveWithMaxSpeed = bForceMaxSpeed;
-	RequestedVelocity.Z = 0.0f;
+	//RequestedVelocity.Z = 0.0f;
 
 	//if (IsMovingOnGround())
 	//{

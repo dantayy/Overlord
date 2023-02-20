@@ -41,6 +41,9 @@ EBTNodeResult::Type UBTTask_GetPathPoints::ExecuteTask(UBehaviorTreeComponent& O
 
 	// set Blackboard's move vector comp to the value of one of the Locations in the spline
 	OwnerComp.GetBlackboardComponent()->SetValue<UBlackboardKeyType_Vector>("MoveToLocation", PathRef->Locations[index]);
+	// orient target to face new location
+	FRotator LookDir = FVector(PathRef->Locations[index] - Target->GetTransform().GetLocation()).ToOrientationRotator().Clamp();
+	Target->SetActorRotation(LookDir);
 
 	// increment the locations index
 	index++;
