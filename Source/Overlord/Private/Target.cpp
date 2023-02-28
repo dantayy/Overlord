@@ -17,8 +17,8 @@ ATarget::ATarget()
 	// set up movement component
 	//TargetMovement = CreateDefaultSubobject<UNavMovementComponent>(TEXT("Movement"));
 	// Create an instance of our movement component, and tell it to update our root component.
-	TargetMovement = CreateDefaultSubobject<UTargetNavMovement>(TEXT("Movement"));
-	TargetMovement->UpdatedComponent = RootComponent;
+	//TargetMovement = CreateDefaultSubobject<UTargetNavMovement>(TEXT("Movement"));
+	//TargetMovement->UpdatedComponent = RootComponent;
 
 	// set a default mesh of a target
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> CubeVisualAsset(TEXT("/Game/StarterContent/Shapes/Shape_Cube.Shape_Cube"));

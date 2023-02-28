@@ -24,5 +24,5 @@ public:
 
 	// spline point index to send to blackboard vector var
 	int32 index = 0;
-	
+
 };

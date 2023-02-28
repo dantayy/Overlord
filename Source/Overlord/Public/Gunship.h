@@ -23,15 +23,15 @@ public:
 
 	// location from which the Projectile will fire from
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	FVector MuzzleOffset;
+	FVector MuzzleOffset = FVector();
 
 	// spline path for gunship to follow
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Spline")
-	USplineComponent* SplineComponent;
+	USplineComponent* SplineComponent = nullptr;
 
 	// camera for player to control
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Camera)
-	class UCameraComponent* Viewfinder;
+	class UCameraComponent* Viewfinder = nullptr;
 
 protected:
 	// Called when the game starts or when spawned

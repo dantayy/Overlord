@@ -51,7 +51,7 @@ void AGunship::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	// move our gunship along the currently set spline
-	if (SplineComponent->GetSplineLength() != 0.0f) {
+	if (SplineComponent && SplineComponent->GetSplineLength() != 0.0f) {
 		// log spline length
 		//if (GEngine) {
 		//	// Display a debug message for five seconds

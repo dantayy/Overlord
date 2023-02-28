@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 //#include "GameFramework/NavMovementComponent.h"
-#include "TargetNavMovement.h"
+//#include "TargetNavMovement.h"
 #include "Projectile.h"
 #include "Target.generated.h"
 
@@ -26,8 +26,8 @@ public:
 	// component to allow targets to move
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	//UNavMovementComponent* TargetMovement;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	UTargetNavMovement* TargetMovement;
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	//UTargetNavMovement* TargetMovement;
 
 	// health pool to be depleted by collisions with projectiles, destroy the target when 0
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
@@ -35,10 +35,16 @@ public:
 	// flag determining if target should count towards level completion (destroy hostiles == good, destroy non-hostiles == not good)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
 	bool Hostile = true;
-
+	// speed limit to set MaxSpeed for when utilizing more nuanced movement components in child classes (ie humans and vehicles)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	int SpeedLimit = 1000;
+	// acceleration limit to set MaxAcceleration for when utilizing more nuanced movement components in child classes (ie humans and vehicles)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	int AccelLimit = 50;
+	// behavior tree that can control a target
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
 	class UBehaviorTree* TargetTree;
-
+	// object in world with custom behaviors assigned to it that the target's bt will run if the controller is made to do so
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "AI")
 	class ASmartObject* SmartObject;
 

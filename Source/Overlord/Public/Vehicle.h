@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Target.h"
+#include "GameFramework/FloatingPawnMovement.h"
 #include "Vehicle.generated.h"
 
 // subclass of Target, to be subclassesed and attached to vehicle meshes to drive around in levels
@@ -15,6 +16,9 @@ class OVERLORD_API AVehicle : public ATarget
 public:
 	// constructor
 	AVehicle();
+
+	// vehicle movement component
+	UFloatingPawnMovement* VehicleMovement;
 
 protected:
 	// Called when the game starts or when spawned
