@@ -44,48 +44,57 @@ EBTNodeResult::Type UBTTask_MoveVehicle::ExecuteTask(UBehaviorTreeComponent& Own
 		// disable the flag
 		FirstExecute = false;
 	}
-	else {
-		// calc length from goal world pos to vehicle world pos
-		float LengthFromGoal = FVector(GoalPos - Vehicle->GetActorTransform().GetLocation()).Length();
-
-		// if close enough, update the goal world pos
-		if (LengthFromGoal <= UpdateLength) {
-			// increment goal spline distance
-			GoalDistance += GoalDifference;
-			// if exceeding length of spline, reset to beginning of spline
-			if (GoalDistance >= PathRef->Path->GetSplineLength()) {
-				GoalDistance = 0.0f;
-			}
-			// set goal world pos
-			GoalPos = PathRef->Path->GetWorldLocationAtDistanceAlongSpline(GoalDistance);
+	// get vector from vehicle to goal, zeroing out Z for angle/distance calculations
+	FVector GoalVec = GoalPos - Vehicle->GetActorTransform().GetLocation();
+	GoalVec.Z = 0;
+	// calc length from goal world pos to vehicle world pos
+	float LengthFromGoal = GoalVec.Length();
+	// if close enough, update the goal world pos
+	if (LengthFromGoal <= UpdateLength) {
+		// increment goal spline distance
+		GoalDistance += GoalDifference;
+		// if exceeding length of spline, reset to beginning of spline
+		if (GoalDistance >= PathRef->Path->GetSplineLength()) {
+			GoalDistance = 0.0f;
 		}
+		// set goal world pos
+		GoalPos = PathRef->Path->GetWorldLocationAtDistanceAlongSpline(GoalDistance);
+		// recalculate goal vector
+		GoalVec = GoalPos - Vehicle->GetActorTransform().GetLocation();
+		GoalVec.Z = 0;
+		LengthFromGoal = GoalVec.Length();
 	}
 
 	// calc angle between forward of vehicle and to-goal vector
-	float GoalAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(GoalPos - Vehicle->GetActorTransform().GetLocation(), Vehicle->GetActorForwardVector()) / 
-		FVector(GoalPos - Vehicle->GetActorTransform().GetLocation()).Length() * Vehicle->GetActorForwardVector().Length()));
+	FVector VehForward = Vehicle->GetActorForwardVector();
+	VehForward.Z = 0;
+	float GoalAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(GoalVec, VehForward) /
+		LengthFromGoal * VehForward.Length()));
 
 	// determine next acceleration input vector based on above angle
 	FVector Acceleration;
 	if (GoalAngle > UpdateAngle) {
-		Acceleration = FVector(GoalPos - Vehicle->GetActorTransform().GetLocation()).GetClampedToMaxSize(Vehicle->AccelLimit);
+		Acceleration = GoalVec.GetClampedToSize(Vehicle->AccelLimit, Vehicle->AccelLimit);
 	}
 	else {
-		Acceleration = Vehicle->GetActorForwardVector().GetClampedToSize(Vehicle->AccelLimit, Vehicle->AccelLimit);
+		Acceleration = VehForward.GetClampedToSize(Vehicle->AccelLimit, Vehicle->AccelLimit);
 	}
 
 	// vehicles cannot accelerate upward or downward on their own
 	//Acceleration.Z = 0;
 
 	// rotate vehicle towards acceleration
-	FQuat VehicleRot = Vehicle->GetActorQuat();
-	FQuat GoalRot = Acceleration.ToOrientationQuat();
-	if (VehicleRot != GoalRot) {
-		Vehicle->VisualMesh->SetWorldRotation(FQuat::Slerp(VehicleRot, GoalRot, 0.4));
-	}
+	//FRotator VehicleRot = Vehicle->GetActorRotation();
+	//FRotator GoalRot = Acceleration.ToOrientationRotator();
+	//if (VehicleRot.Yaw != GoalRot.Yaw) {
+	//	VehicleRot.Yaw = FMath::Lerp(VehicleRot.Yaw, GoalRot.Yaw, .4);
+	//	Vehicle->VisualMesh->SetWorldRotation(VehicleRot);
+	//}
 
 	// apply acceleration to vehicle for next movement update
-	Vehicle->GetMovementComponent()->AddInputVector(Acceleration, true);
+	//Vehicle->GetMovementComponent()->AddInputVector(Acceleration, true);
+	//Vehicle->GetMovementComponent()->RequestDirectMove(Acceleration, true);
+	//Vehicle->AccelVector = Acceleration;
 
 	return EBTNodeResult::Succeeded;
 }

@@ -12,13 +12,6 @@ AVehicle::AVehicle()
 		VisualMesh->SetStaticMesh(SphereVisualAsset.Object);
 		VisualMesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
 	}
-
-	// set up the movement component
-	VehicleMovement = CreateDefaultSubobject<UFloatingPawnMovement>(TEXT("Movement"));
-	VehicleMovement->UpdatedComponent = RootComponent;
-	VehicleMovement->MaxSpeed = SpeedLimit;
-	VehicleMovement->Acceleration = AccelLimit;
-	VehicleMovement->Deceleration = AccelLimit;
 }
 
 void AVehicle::BeginPlay()

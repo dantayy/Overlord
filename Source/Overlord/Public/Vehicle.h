@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Target.h"
-#include "GameFramework/FloatingPawnMovement.h"
 #include "Vehicle.generated.h"
 
 // subclass of Target, to be subclassesed and attached to vehicle meshes to drive around in levels
@@ -17,8 +16,8 @@ public:
 	// constructor
 	AVehicle();
 
-	// vehicle movement component
-	UFloatingPawnMovement* VehicleMovement;
+	// Acceleration vector to be updated and applied every tick
+	FVector AccelVector;
 
 protected:
 	// Called when the game starts or when spawned

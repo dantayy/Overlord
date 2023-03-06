@@ -10,7 +10,8 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine",
-				"AIModule"
+				"AIModule",
+				"ChaosVehicles"
 			]
 		}
 	],
@@ -30,6 +31,10 @@
 				"Mac",
 				"Linux"
 			]
+		},
+		{
+			"Name": "ChaosVehiclesPlugin",
+			"Enabled": true
 		}
 	]
 }
