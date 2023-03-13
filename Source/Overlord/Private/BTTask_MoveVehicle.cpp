@@ -21,7 +21,7 @@ EBTNodeResult::Type UBTTask_MoveVehicle::ExecuteTask(UBehaviorTreeComponent& Own
 	}
 
 	// grab Vehicle that should have PointPath SmartObject tied to it
-	AVehicle* Vehicle = Cast<AVehicle>(OwnerController->GetPawn());
+	AWheeledVehicle* Vehicle = Cast<AWheeledVehicle>(OwnerController->GetPawn());
 	if (!Vehicle) {
 		return EBTNodeResult::Failed;
 	}
@@ -66,19 +66,39 @@ EBTNodeResult::Type UBTTask_MoveVehicle::ExecuteTask(UBehaviorTreeComponent& Own
 	}
 
 	// calc angle between forward of vehicle and to-goal vector
-	FVector VehForward = Vehicle->GetActorForwardVector();
-	VehForward.Z = 0;
-	float GoalAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(GoalVec, VehForward) /
-		LengthFromGoal * VehForward.Length()));
+	//FVector VehForward = Vehicle->GetActorForwardVector();
+	//VehForward.Z = 0;
+	//float GoalAngle = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(GoalVec, VehForward) /
+	//	LengthFromGoal * VehForward.Length()));
+	FVector VehFrontLeft = Vehicle->GetWheelLocation(0);
+	float GoalLeftDistance = FVector(GoalPos - VehFrontLeft).Length();
+	FVector VehFrontRight = Vehicle->GetWheelLocation(1);
+	float GoalRightDistance = FVector(GoalPos - VehFrontRight).Length();
 
-	// determine next acceleration input vector based on above angle
-	FVector Acceleration;
-	if (GoalAngle > UpdateAngle) {
-		Acceleration = GoalVec.GetClampedToSize(Vehicle->AccelLimit, Vehicle->AccelLimit);
+	// determine turn
+	if (GoalLeftDistance < GoalRightDistance) {
+		Vehicle->SetSteering(FMath::Lerp(Vehicle->GetSteering(), -0.6f, 0.3f));
+	}
+	else if (GoalRightDistance < GoalLeftDistance) {
+		Vehicle->SetSteering(FMath::Lerp(Vehicle->GetSteering(), 0.6f, 0.3f));
+	}
+
+	// determine acceleration
+	if (Vehicle->GetSpeed() < Vehicle->MaxSpeed) {
+		Vehicle->SetThrottle(FMath::Lerp(Vehicle->GetThrottle(), 1.0f, 0.3f));
 	}
 	else {
-		Acceleration = VehForward.GetClampedToSize(Vehicle->AccelLimit, Vehicle->AccelLimit);
+		Vehicle->SetThrottle(0.0f);
 	}
+
+	// determine next acceleration input vector based on above angle
+	//FVector Acceleration;
+	//if (GoalAngle > UpdateAngle) {
+	//	Acceleration = GoalVec.GetClampedToSize(Vehicle->AccelLimit, Vehicle->AccelLimit);
+	//}
+	//else {
+	//	Acceleration = VehForward.GetClampedToSize(Vehicle->AccelLimit, Vehicle->AccelLimit);
+	//}
 
 	// vehicles cannot accelerate upward or downward on their own
 	//Acceleration.Z = 0;

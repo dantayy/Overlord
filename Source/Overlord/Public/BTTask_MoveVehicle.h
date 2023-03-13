@@ -6,7 +6,7 @@
 #include "BehaviorTree/Tasks/BTTask_BlackboardBase.h"
 #include "AIController.h"
 #include "Components/SplineComponent.h"
-#include "Vehicle.h"
+#include "WheeledVehicle.h"
 #include "PointPath.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "BehaviorTree/Blackboard/BlackboardKeyType_Vector.h"

@@ -30,7 +30,11 @@ public:
 
 	// Wheeled vehicle movement component to control our vehicle with
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
-	UChaosVehicleMovementComponent* WheeledVehicleMovement = nullptr;
+	UChaosWheeledVehicleMovementComponent* WheeledVehicleMovement = nullptr;
+
+	// max speed of a wheeled vehicle
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
+	float MaxSpeed = 40.0f;
 	
 protected:
 	// Called when the game starts or when spawned
@@ -39,4 +43,14 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	// vehicle control functions
+	void SetThrottle(float Val);
+	void SetSteering(float Val);
+	void SetBreaking(bool Breaking);
+	float GetSpeed();
+	float GetThrottle();
+	float GetSteering();
+	bool GetBreaking();
+	FVector GetWheelLocation(UINT WheelNum);
 };
