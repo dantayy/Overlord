@@ -8,6 +8,8 @@
 #include "Components/SplineComponent.h"
 #include "Components/SplineMeshComponent.h"
 #include "Camera/CameraComponent.h"
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 #include "Projectile.h"
 #include "Gunship.generated.h"
 
@@ -33,6 +35,27 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Camera)
 	class UCameraComponent* Viewfinder = nullptr;
 
+	// available ammo in one "magazine" for gunship's weapon
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	int MaxAmmo = 1;
+
+	// current ammo in gunship's weapon, triggers a "reload" when 0
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	int CurrentAmmo = MaxAmmo;
+
+	// ammount of time it takes to reload our gunship's main weapon (seconds)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
+	int ReloadTime = 2;
+
+	// HUD Widget
+	UPROPERTY(EditAnywhere, Category = UI)
+	TSubclassOf<UUserWidget> HUDClass;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = UI)
+	class UUserWidget* HUDWidget;
+
+	
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -55,6 +78,9 @@ protected:
 	// ammount to increment spline position by every tick (aka spline speed)
 	float SplineSpeed = 5.0f;
 
+	// handle for our reload timer managed by world timer manager
+	FTimerHandle ReloadTimer;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -65,6 +91,10 @@ public:
 	// Fires a Projectile when triggered
 	UFUNCTION()
 	void Fire();
+
+	// reloads the main weapon magazine
+	UFUNCTION()
+	void Reload();
 
 	// Rotates the Viewfinder around X when triggered
 	UFUNCTION()

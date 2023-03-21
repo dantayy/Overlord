@@ -43,7 +43,16 @@ void AGunship::BeginPlay()
 	// The -1 "Key" value argument prevents the message from being updated or refreshed
 	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::White, TEXT("We are using Gunship uwu"));
 
-	//SetInputMode(FInputModeGameAndUI());
+	// spawn the HUD if we have one set up
+	if (IsValid(HUDClass)) {
+		HUDWidget = CreateWidget(GetWorld(), HUDClass);
+		if (HUDWidget) {
+			HUDWidget->AddToViewport();
+		}
+	}
+
+	// set input mode for the controller which this should be set to posses in the editor
+	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetInputMode(FInputModeGameOnly());
 }
 
 void AGunship::Tick(float DeltaTime)
@@ -115,45 +124,89 @@ void AGunship::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 void AGunship::Fire()
 {
 	// Attempt to fire a projectile
-	if (ProjectileClass)
+	if (!ProjectileClass)
 	{
-		// log successful firing
+		// log unsuccessful firing
 		if (GEngine) {
 			// Display a debug message for five seconds
 			// The -1 "Key" value argument prevents the message from being updated or refreshed
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Firing"));
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("NO PROJECTILE ATTACHED TO GUNSHIP"));
 		}
-		// Get the camera transform
-		FVector CameraLocation = Viewfinder->GetComponentLocation();
-		FRotator CameraRotation = Viewfinder->GetComponentRotation();
-		//GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
-		// Set MuzzleOffset from camera space to world space
-		FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-
-		// Skew the aim to be slightly upwards
-		FRotator MuzzleRotation = CameraRotation;
-		MuzzleRotation.Pitch += 10.0f;
-
-		// check to make sure Gunship is in an active world before spawning Projectile
-		UWorld* World = GetWorld();
-		if (World)
-		{
-			// create spawn parameters
-			FActorSpawnParameters SpawnParams;
-			SpawnParams.Owner = this;
-			SpawnParams.Instigator = GetInstigator();
-
-			// Spawn the projectile at the muzzle
-			AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
-			if (Projectile)
-			{
-				// Set the projectile's initial trajectory
-				FVector LaunchDirection = MuzzleRotation.Vector();
-				Projectile->FireInDirection(LaunchDirection);
-			}
-		}
+		return;
 	}
+	// check to make sure Gunship is in an active world before spawning Projectile
+	UWorld* World = GetWorld();
+	if (!World) {
+		// log unsuccessful firing
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("GUNSHIP NOT IN ACTIVE WORLD!"));
+		}
+		return;
+	}
+	if (CurrentAmmo == 0) {
+		// log unsuccessful firing
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange, TEXT("OUT OF AMMO! NEED TO RELOAD!"));
+		}
+		return;
+	}
+	// Get the camera transform
+	FVector CameraLocation = Viewfinder->GetComponentLocation();
+	FRotator CameraRotation = Viewfinder->GetComponentRotation();
+	//GetActorEyesViewPoint(CameraLocation, CameraRotation);
+
+	// Set MuzzleOffset from camera space to world space
+	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
+
+	// Skew the aim to be slightly upwards
+	FRotator MuzzleRotation = CameraRotation;
+	MuzzleRotation.Pitch += 10.0f;
+
+	// create spawn parameters
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	// Spawn the projectile at the muzzle
+	AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
+	
+	if (!Projectile)
+	{
+		// log unsuccessful firing
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("PROJECTILE NOT SPAWNED FOR UNKNOWN REASONS, ABORTING."));
+		}
+		return;
+	}
+
+	// Decrement current ammo
+	CurrentAmmo--;
+	// load next mag if out of ammo
+	if (CurrentAmmo < 1) {
+		GetWorldTimerManager().SetTimer(ReloadTimer, this, &AGunship::Reload, ReloadTime);
+	}
+
+	// Set the projectile's initial trajectory
+	FVector LaunchDirection = MuzzleRotation.Vector();
+	Projectile->FireInDirection(LaunchDirection);
+
+	// log successful firing
+	if (GEngine) {
+		// Display a debug message for five seconds
+		// The -1 "Key" value argument prevents the message from being updated or refreshed
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Firing"));
+	}
+}
+
+void AGunship::Reload()
+{
+	CurrentAmmo = MaxAmmo;
 }
 
 void AGunship::PitchViewfinder(float AxisValue)
