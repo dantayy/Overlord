@@ -39,6 +39,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile)
 	uint8 Damage = 1;
 
+	// speed at which the projectile will be fired from the weapon spawning it
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Projectile)
+	float MuzzleVelocity = 10000.0f;
+
 	// Explosion to be emitted on collision, leave empty if no explosion desired
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Explosion)
 	TSubclassOf<class AExplosion> ProjectileExplosion;

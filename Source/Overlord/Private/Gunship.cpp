@@ -31,6 +31,11 @@ AGunship::AGunship()
 
 	// gunship is not hostile, default the flag to false
 	Hostile = false;
+
+	// default main weapon to small weapon
+	EquippedWeapon = &SmallWeapon;
+	// tie index to associated weapon set above (0 = small, 1 = medium, 2 = large)
+	WeaponIndex = 0;
 }
 
 void AGunship::BeginPlay()
@@ -107,106 +112,24 @@ void AGunship::Tick(float DeltaTime)
 	NewViewfinderRotation.Yaw = FMath::Clamp(NewViewfinderRotation.Yaw +  ViewfinderInput.X, -135.0f, -45.0f);
 	NewViewfinderRotation.Pitch = FMath::Clamp(NewViewfinderRotation.Pitch + ViewfinderInput.Y, -30.0f, 0.0f);
 	Viewfinder->SetRelativeRotation(NewViewfinderRotation);
+
+	// update current weapon's muzzle location and rotation based on viewfinder
+	EquippedWeapon->MuzzleLocation = Viewfinder->GetComponentLocation();
+	EquippedWeapon->MuzzleDirection = Viewfinder->GetComponentRotation();
 }
 
 void AGunship::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// set up this class as the player input component and attach the project's custom actions/axis to our handlers
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AGunship::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATarget::Fire);
+	PlayerInputComponent->BindAction<FWeaponCycleDelegate>("WeaponCycleUp", IE_Pressed, this, &AGunship::WeaponCycle, true);
+	PlayerInputComponent->BindAction<FWeaponCycleDelegate>("WeaponCycleDown", IE_Pressed, this, &AGunship::WeaponCycle, false);
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AGunship::ZoomIn);
 	PlayerInputComponent->BindAction("Zoom", IE_Released, this, &AGunship::ZoomOut);
 	PlayerInputComponent->BindAxis("ViewfinderPitch", this, &AGunship::PitchViewfinder);
 	PlayerInputComponent->BindAxis("ViewfinderYaw", this, &AGunship::YawViewfinder);
 
-}
-
-void AGunship::Fire()
-{
-	// Attempt to fire a projectile
-	if (!ProjectileClass)
-	{
-		// log unsuccessful firing
-		if (GEngine) {
-			// Display a debug message for five seconds
-			// The -1 "Key" value argument prevents the message from being updated or refreshed
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("NO PROJECTILE ATTACHED TO GUNSHIP"));
-		}
-		return;
-	}
-	// check to make sure Gunship is in an active world before spawning Projectile
-	UWorld* World = GetWorld();
-	if (!World) {
-		// log unsuccessful firing
-		if (GEngine) {
-			// Display a debug message for five seconds
-			// The -1 "Key" value argument prevents the message from being updated or refreshed
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("GUNSHIP NOT IN ACTIVE WORLD!"));
-		}
-		return;
-	}
-	if (CurrentAmmo == 0) {
-		// log unsuccessful firing
-		if (GEngine) {
-			// Display a debug message for five seconds
-			// The -1 "Key" value argument prevents the message from being updated or refreshed
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange, TEXT("OUT OF AMMO! NEED TO RELOAD!"));
-		}
-		return;
-	}
-	// Get the camera transform
-	FVector CameraLocation = Viewfinder->GetComponentLocation();
-	FRotator CameraRotation = Viewfinder->GetComponentRotation();
-	//GetActorEyesViewPoint(CameraLocation, CameraRotation);
-
-	// Set MuzzleOffset from camera space to world space
-	FVector MuzzleLocation = CameraLocation + FTransform(CameraRotation).TransformVector(MuzzleOffset);
-
-	// Skew the aim to be slightly upwards
-	FRotator MuzzleRotation = CameraRotation;
-	MuzzleRotation.Pitch += 10.0f;
-
-	// create spawn parameters
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-	SpawnParams.Instigator = GetInstigator();
-
-	// Spawn the projectile at the muzzle
-	AProjectile* Projectile = World->SpawnActor<AProjectile>(ProjectileClass, MuzzleLocation, MuzzleRotation, SpawnParams);
-	
-	if (!Projectile)
-	{
-		// log unsuccessful firing
-		if (GEngine) {
-			// Display a debug message for five seconds
-			// The -1 "Key" value argument prevents the message from being updated or refreshed
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("PROJECTILE NOT SPAWNED FOR UNKNOWN REASONS, ABORTING."));
-		}
-		return;
-	}
-
-	// Decrement current ammo
-	CurrentAmmo--;
-	// load next mag if out of ammo
-	if (CurrentAmmo < 1) {
-		GetWorldTimerManager().SetTimer(ReloadTimer, this, &AGunship::Reload, ReloadTime);
-	}
-
-	// Set the projectile's initial trajectory
-	FVector LaunchDirection = MuzzleRotation.Vector();
-	Projectile->FireInDirection(LaunchDirection);
-
-	// log successful firing
-	if (GEngine) {
-		// Display a debug message for five seconds
-		// The -1 "Key" value argument prevents the message from being updated or refreshed
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Firing"));
-	}
-}
-
-void AGunship::Reload()
-{
-	CurrentAmmo = MaxAmmo;
 }
 
 void AGunship::PitchViewfinder(float AxisValue)
@@ -227,4 +150,37 @@ void AGunship::ZoomIn()
 void AGunship::ZoomOut()
 {
 	ZoomedIn = false;
+}
+
+void AGunship::WeaponCycle(bool CycleUp)
+{
+	if (CycleUp) {
+		if (WeaponIndex == 2) {
+			WeaponIndex = 0;
+		}
+		else {
+			WeaponIndex++;
+		}
+	}
+	else {
+		if (WeaponIndex == 0) {
+			WeaponIndex = 2;
+		}
+		else {
+			WeaponIndex--;
+		}
+	}
+	switch (WeaponIndex) {
+	case 0:
+		EquippedWeapon = &SmallWeapon;
+		break;
+	case 1:
+		EquippedWeapon = &MediumWeapon;
+		break;
+	case 2:
+		EquippedWeapon = &LargeWeapon;
+		break;
+	default:
+		break;
+	}
 }

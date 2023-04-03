@@ -9,6 +9,50 @@
 #include "Projectile.h"
 #include "Target.generated.h"
 
+// struct defining general properties for a weapon that a target could fire
+USTRUCT(BlueprintType)
+struct FWeapon
+{
+	GENERATED_BODY()
+
+	// available ammo in one "magazine" of weapon
+	// for infinite ammo, set to 0
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int MaxAmmo;
+
+	// current ammo in weapon, should start reload timer when 0
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	int CurrentAmmo;
+
+	// ammount of time it takes to reload this weapon (seconds)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float ReloadTime;
+
+	// handle for our reload timer managed by world timer manager
+	FTimerHandle ReloadTimer;
+
+	// Projectile to be fired from the Gunship
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TSubclassOf<class AProjectile> ProjectileClass;
+
+	// location at which to spawn projectiles
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FVector MuzzleLocation;
+
+	// direction to fire projectiles in
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FRotator MuzzleDirection;
+
+	// default constructor
+	FWeapon() {
+		MaxAmmo = 1;
+		CurrentAmmo = MaxAmmo;
+		ReloadTime = 2.0f;
+		MuzzleLocation = FVector();
+		MuzzleDirection = FRotator();
+	}
+};
+
 // Base class for all targets the player gunship can strike with projectiles
 UCLASS()
 class OVERLORD_API ATarget : public APawn
@@ -55,6 +99,9 @@ protected:
 	// name of most recent projectile to hit target, used to prevent double-hit events
 	FString RecentProjectile = "";
 
+	// currently equipped weapon
+	FWeapon* EquippedWeapon = nullptr;
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -67,4 +114,15 @@ public:
 	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	// helper function for firing a target's weapon
+	UFUNCTION(BlueprintCallable)
+	void Fire();
+
+	// getter for equipped weapon's max ammo
+	UFUNCTION(BlueprintCallable)
+	int GetMaxAmmo();
+
+	// getter for equipped weapon's current ammo
+	UFUNCTION(BlueprintCallable)
+	int GetCurrentAmmo();
 };

@@ -31,6 +31,7 @@ ATarget::ATarget()
 	// enable physics and overlap events
 	VisualMesh->SetSimulatePhysics(true);
 	VisualMesh->SetGenerateOverlapEvents(true);
+
 }
 
 // Called when the game starts or when spawned
@@ -134,5 +135,101 @@ void ATarget::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherA
 		// destroy the Target
 		Destroy();
 	}
+}
+
+void ATarget::Fire()
+{
+	// Attempt to fire a projectile
+	if (!EquippedWeapon) {
+		// log unsuccessful firing
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("NO WEAPON EQUIPPED"));
+		}
+		return;
+	}
+	else if (!EquippedWeapon->ProjectileClass)
+	{
+		// log unsuccessful firing
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("NO PROJECTILE ATTACHED TO WEAPON"));
+		}
+		return;
+	}
+	// check to make sure Gunship is in an active world before spawning Projectile
+	UWorld* World = GetWorld();
+	if (!World) {
+		// log unsuccessful firing
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("TARGET NOT IN ACTIVE WORLD!"));
+		}
+		return;
+	}
+	if (EquippedWeapon->MaxAmmo != 0 && EquippedWeapon->CurrentAmmo == 0) {
+		// log unsuccessful firing
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange, TEXT("OUT OF AMMO! NEED TO RELOAD!"));
+		}
+		return;
+	}
+	// create spawn parameters
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = GetInstigator();
+
+	// Spawn the projectile at the muzzle
+	AProjectile* Projectile = World->SpawnActor<AProjectile>(EquippedWeapon->ProjectileClass, EquippedWeapon->MuzzleLocation, EquippedWeapon->MuzzleDirection, SpawnParams);
+
+	if (!Projectile)
+	{
+		// log unsuccessful firing
+		if (GEngine) {
+			// Display a debug message for five seconds
+			// The -1 "Key" value argument prevents the message from being updated or refreshed
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("PROJECTILE NOT SPAWNED FOR UNKNOWN REASONS, ABORTING."));
+		}
+		return;
+	}
+
+	// Decrement weapon's ammo if not unlimitted
+	if (EquippedWeapon->MaxAmmo != 0) {
+		EquippedWeapon->CurrentAmmo--;
+		// begin reload if out of ammo
+		if (EquippedWeapon->CurrentAmmo < 1) {
+			GetWorldTimerManager().SetTimer(EquippedWeapon->ReloadTimer, FTimerDelegate::CreateLambda([&] { EquippedWeapon->CurrentAmmo = EquippedWeapon->MaxAmmo; }), EquippedWeapon->ReloadTime, false);
+		}
+	}
+
+	// fire the projectile
+	Projectile->FireInDirection(EquippedWeapon->MuzzleDirection.Vector());
+	// log successful firing
+	if (GEngine) {
+		// Display a debug message for five seconds
+		// The -1 "Key" value argument prevents the message from being updated or refreshed
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Firing"));
+	}
+}
+
+int ATarget::GetMaxAmmo()
+{
+	if (EquippedWeapon) {
+		return EquippedWeapon->MaxAmmo;
+	}
+	return -1;
+}
+
+int ATarget::GetCurrentAmmo()
+{
+	if (EquippedWeapon) {
+		return EquippedWeapon->CurrentAmmo;
+	}
+	return -1;
 }
 

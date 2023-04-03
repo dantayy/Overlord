@@ -37,8 +37,8 @@ void AExplosion::BeginPlay()
 	Super::BeginPlay();
 
 	// set up collision handling
-	CollisionComponent->OnComponentHit.AddDynamic(this, &AExplosion::OnHit);
-	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AExplosion::OnOverlap);
+	//CollisionComponent->OnComponentHit.AddDynamic(this, &AExplosion::OnHit);
+	//CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AExplosion::OnOverlap);
 	
 	// make a timer that will destroy this explosion after the ammount of time specified by the member var passes
 	GetWorldTimerManager().SetTimer(ExplosionTimer, this, &AExplosion::EndExplosion, Duration, false);
