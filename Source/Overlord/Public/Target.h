@@ -24,12 +24,17 @@ struct FWeapon
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int CurrentAmmo;
 
+	// flag determining if weapon supports automatic fire (click and hold)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool FullAuto;
+	
+	// rate of fire (per second)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float FireRate;
+
 	// ammount of time it takes to reload this weapon (seconds)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float ReloadTime;
-
-	// handle for our reload timer managed by world timer manager
-	FTimerHandle ReloadTimer;
 
 	// Projectile to be fired from the Gunship
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -73,9 +78,6 @@ public:
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	//UTargetNavMovement* TargetMovement;
 
-	// health pool to be depleted by collisions with projectiles, destroy the target when 0
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
-	uint8 Health = 1;
 	// flag determining if target should count towards level completion (destroy hostiles == good, destroy non-hostiles == not good)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
 	bool Hostile = true;
@@ -96,11 +98,18 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+	// health pool to be depleted by collisions with projectiles, destroy the target when 0
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Target")
+	uint8 Health = 1;
+
 	// name of most recent projectile to hit target, used to prevent double-hit events
 	FString RecentProjectile = "";
 
 	// currently equipped weapon
 	FWeapon* EquippedWeapon = nullptr;
+
+	// timer handle for weapon firing when the weapon is automatic
+	FTimerHandle WeaponFiringHandle;
 
 public:	
 	// Called every frame
@@ -114,9 +123,26 @@ public:
 	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	// setter for equipped weapon
+	UFUNCTION(BlueprintCallable)
+	void SetEquippedWeapon(FWeapon& NewWeapon);
+
+	// setter for target weapon firing
+	UFUNCTION(BlueprintCallable)
+	void SetWeaponFiring(bool Firing);
+	// delegate for weapon firing
+	DECLARE_DELEGATE_OneParam(FWeaponFiringDelegate, bool);
+
 	// helper function for firing a target's weapon
 	UFUNCTION(BlueprintCallable)
-	void Fire();
+	void FireWeapon();
+
+	// helper function for reloading a target's weapon
+	UFUNCTION(BlueprintCallable)
+	void ReloadWeapon(struct FWeapon& WeaponRef);
+
+	// getter for target's health
+	int GetHealth();
 
 	// getter for equipped weapon's max ammo
 	UFUNCTION(BlueprintCallable)

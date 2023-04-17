@@ -49,7 +49,7 @@ void ATarget::BeginPlay()
 	if (OverloardGM && Hostile) {
 		OverloardGM->HostileTargets.Add(this);
 		this->OnDestroyed.AddDynamic(OverloardGM, &AOverlordGameModeBase::HostileDestroyed);
-	}
+	} 
 }
 
 // Called every frame
@@ -137,7 +137,26 @@ void ATarget::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherA
 	}
 }
 
-void ATarget::Fire()
+void ATarget::SetEquippedWeapon(FWeapon& NewWeapon) {
+	EquippedWeapon = &NewWeapon;
+	SetWeaponFiring(false);
+}
+
+void ATarget::SetWeaponFiring(bool Firing) {
+	if (Firing)
+	{
+		FireWeapon();
+		if (EquippedWeapon->FullAuto) {
+			GetWorldTimerManager().SetTimer(WeaponFiringHandle, this, &ATarget::FireWeapon, EquippedWeapon->FireRate, true);
+		}
+	}
+	else 
+	{
+		GetWorldTimerManager().ClearTimer(WeaponFiringHandle);
+	}
+}
+
+void ATarget::FireWeapon()
 {
 	// Attempt to fire a projectile
 	if (!EquippedWeapon) {
@@ -203,7 +222,7 @@ void ATarget::Fire()
 		EquippedWeapon->CurrentAmmo--;
 		// begin reload if out of ammo
 		if (EquippedWeapon->CurrentAmmo < 1) {
-			GetWorldTimerManager().SetTimer(EquippedWeapon->ReloadTimer, FTimerDelegate::CreateLambda([&] { EquippedWeapon->CurrentAmmo = EquippedWeapon->MaxAmmo; }), EquippedWeapon->ReloadTime, false);
+			ReloadWeapon(*EquippedWeapon);
 		}
 	}
 
@@ -215,6 +234,13 @@ void ATarget::Fire()
 		// The -1 "Key" value argument prevents the message from being updated or refreshed
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Firing"));
 	}
+}
+
+void ATarget::ReloadWeapon(struct FWeapon& WeaponRef)
+{
+	SetWeaponFiring(false);
+	FTimerHandle ReloadHandle;
+	GetWorldTimerManager().SetTimer(ReloadHandle, FTimerDelegate::CreateLambda([&] { WeaponRef.CurrentAmmo = WeaponRef.MaxAmmo; }), WeaponRef.ReloadTime, false);
 }
 
 int ATarget::GetMaxAmmo()
@@ -231,5 +257,10 @@ int ATarget::GetCurrentAmmo()
 		return EquippedWeapon->CurrentAmmo;
 	}
 	return -1;
+}
+
+int ATarget::GetHealth()
+{
+	return Health;
 }
 

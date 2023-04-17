@@ -122,7 +122,8 @@ void AGunship::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	// set up this class as the player input component and attach the project's custom actions/axis to our handlers
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ATarget::Fire);
+	PlayerInputComponent->BindAction<FWeaponFiringDelegate>("Fire", IE_Pressed, this, &ATarget::SetWeaponFiring, true);
+	PlayerInputComponent->BindAction<FWeaponFiringDelegate>("Fire", IE_Released, this, &ATarget::SetWeaponFiring, false);
 	PlayerInputComponent->BindAction<FWeaponCycleDelegate>("WeaponCycleUp", IE_Pressed, this, &AGunship::WeaponCycle, true);
 	PlayerInputComponent->BindAction<FWeaponCycleDelegate>("WeaponCycleDown", IE_Pressed, this, &AGunship::WeaponCycle, false);
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &AGunship::ZoomIn);
@@ -172,13 +173,13 @@ void AGunship::WeaponCycle(bool CycleUp)
 	}
 	switch (WeaponIndex) {
 	case 0:
-		EquippedWeapon = &SmallWeapon;
+		SetEquippedWeapon(SmallWeapon);
 		break;
 	case 1:
-		EquippedWeapon = &MediumWeapon;
+		SetEquippedWeapon(MediumWeapon);
 		break;
 	case 2:
-		EquippedWeapon = &LargeWeapon;
+		SetEquippedWeapon(LargeWeapon);
 		break;
 	default:
 		break;
