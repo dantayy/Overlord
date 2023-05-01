@@ -29,6 +29,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<ATarget*> HostileTargets;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = UI)
+	class UUserWidget* GameOverWidget;
+
 	/** Remove the current menu widget and create a new one from the specified class, if provided. */
 	UFUNCTION(BlueprintCallable, Category = "UMG Game")
 	void ChangeMenuWidget(TSubclassOf<UUserWidget> NewWidgetClass);
@@ -37,6 +40,10 @@ public:
 	UFUNCTION()
 	void HostileDestroyed(AActor* DestroyedActor);
 
+	// Called when something is putting the game in the game over state
+	UFUNCTION()
+	void GameOver();
+	
 protected:
 
 	/** Called when the game starts. */

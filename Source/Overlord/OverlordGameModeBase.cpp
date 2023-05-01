@@ -70,3 +70,12 @@ void AOverlordGameModeBase::HostileDestroyed(AActor* DestroyedActor)
         UGameplayStatics::OpenLevel(GetWorld(), Levels[LevelIterator]);
     }
 }
+
+void AOverlordGameModeBase::GameOver()
+{
+    if (GameOverWidget) {
+        UGameplayStatics::GetPlayerController(GetWorld(), 0)->bShowMouseCursor = true;
+        UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetInputMode(FInputModeUIOnly());
+        GameOverWidget->AddToViewport();
+    }
+}

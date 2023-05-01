@@ -2,6 +2,7 @@
 
 
 #include "Gunship.h"
+#include "Overlord/OverlordGameModeBase.h"
 
 AGunship::AGunship()
 {
@@ -58,6 +59,9 @@ void AGunship::BeginPlay()
 
 	// set input mode for the controller which this should be set to posses in the editor
 	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetInputMode(FInputModeGameOnly());
+
+	// attach gunship destruction to game over screen code
+	this->OnDestroyed.AddDynamic(this, &AGunship::CrashGunship);
 }
 
 void AGunship::Tick(float DeltaTime)
@@ -183,5 +187,15 @@ void AGunship::WeaponCycle(bool CycleUp)
 		break;
 	default:
 		break;
+	}
+}
+
+void AGunship::CrashGunship(AActor* Gunship)
+{
+	// call game mode's game over function
+	AOverlordGameModeBase* OverloardGM = Cast<AOverlordGameModeBase>(GetWorld()->GetAuthGameMode());
+	// make sure we're in the right game mode and that the timer has been set up beforehand
+	if (OverloardGM) {
+		OverloardGM->GameOver();
 	}
 }

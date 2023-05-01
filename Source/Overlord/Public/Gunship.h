@@ -91,4 +91,7 @@ public:
 	void WeaponCycle(bool CycleUp);
 	// delegate for weapon cycling
 	DECLARE_DELEGATE_OneParam(FWeaponCycleDelegate, bool);
+	// crash the gunship/end the game
+	UFUNCTION()
+	void CrashGunship(AActor* Gunship);
 };
