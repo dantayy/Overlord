@@ -15,15 +15,15 @@ void AGameOverCountdown::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	// verify valid time has been set before setting timer
 	if (CountdownTime > 0) {
-		FTimerHandle GameOverHandle;
+		// start timer that'll trigger Overlord's game over when 0
 		GetWorldTimerManager().SetTimer(
 			GameOverHandle,
 			FTimerDelegate::CreateLambda(
 				[&] {
-					// start timer that'll trigger Overlord's gamer over when 0
 					AOverlordGameModeBase* OverloardGM = Cast<AOverlordGameModeBase>(GetWorld()->GetAuthGameMode());
-					// make sure we're in the right game mode and that the timer has been set up beforehand
+					// make sure we're in the right game mode
 					if (OverloardGM) {
 						OverloardGM->GameOver();
 					}
@@ -31,6 +31,13 @@ void AGameOverCountdown::BeginPlay()
 			CountdownTime,
 					false);
 	}
+	// clear the timer when this is destroyed (when the level is ended)
+	this->OnDestroyed.AddDynamic(this, &AGameOverCountdown::ClearTimer);
+}
+
+void AGameOverCountdown::ClearTimer(AActor* Timer)
+{
+	GetWorldTimerManager().ClearTimer(GameOverHandle);
 }
 
 // Called every frame

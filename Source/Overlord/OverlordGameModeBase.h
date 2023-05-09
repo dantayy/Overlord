@@ -29,7 +29,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	TArray<ATarget*> HostileTargets;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = UI)
+	UPROPERTY(EditAnywhere, Category = UI)
+	TSubclassOf<UUserWidget> GameOverClass;
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = UI)
 	class UUserWidget* GameOverWidget;
 
 	/** Remove the current menu widget and create a new one from the specified class, if provided. */

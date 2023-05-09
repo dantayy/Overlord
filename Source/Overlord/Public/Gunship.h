@@ -34,7 +34,6 @@ public:
 	// HUD Widget
 	UPROPERTY(EditAnywhere, Category = UI)
 	TSubclassOf<UUserWidget> HUDClass;
-
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = UI)
 	class UUserWidget* HUDWidget;
 
@@ -73,6 +72,8 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual void DestroyTarget() override;
 
 	// Rotates the Viewfinder around X when triggered
 	UFUNCTION()

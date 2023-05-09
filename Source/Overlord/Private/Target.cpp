@@ -98,7 +98,7 @@ void ATarget::OnHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrim
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Target destroyed"));
 		}
 		// destroy the Target
-		Destroy();
+		DestroyTarget();
 	}
 }
 
@@ -133,8 +133,13 @@ void ATarget::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherA
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Orange, TEXT("Target destroyed"));
 		}
 		// destroy the Target
-		Destroy();
+		DestroyTarget();
 	}
+}
+
+void ATarget::DestroyTarget()
+{
+	Destroy();
 }
 
 void ATarget::SetEquippedWeapon(FWeapon& NewWeapon) {
@@ -158,6 +163,12 @@ void ATarget::SetWeaponFiring(bool Firing) {
 
 void ATarget::FireWeapon()
 {
+	// log firing attempt
+	if (GEngine) {
+		// Display a debug message for five seconds
+		// The -1 "Key" value argument prevents the message from being updated or refreshed
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Yellow, TEXT("Attempting to fire"));
+	}
 	// Attempt to fire a projectile
 	if (!EquippedWeapon) {
 		// log unsuccessful firing

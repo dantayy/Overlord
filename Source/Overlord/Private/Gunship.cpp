@@ -61,7 +61,7 @@ void AGunship::BeginPlay()
 	UGameplayStatics::GetPlayerController(GetWorld(), 0)->SetInputMode(FInputModeGameOnly());
 
 	// attach gunship destruction to game over screen code
-	this->OnDestroyed.AddDynamic(this, &AGunship::CrashGunship);
+	//this->OnDestroyed.AddDynamic(this, &AGunship::CrashGunship);
 }
 
 void AGunship::Tick(float DeltaTime)
@@ -135,6 +135,14 @@ void AGunship::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("ViewfinderPitch", this, &AGunship::PitchViewfinder);
 	PlayerInputComponent->BindAxis("ViewfinderYaw", this, &AGunship::YawViewfinder);
 
+}
+
+void AGunship::DestroyTarget()
+{
+	// trigger the gunship crashing code
+	CrashGunship(this);
+	// run the parent's destroy code
+	Super::DestroyTarget();
 }
 
 void AGunship::PitchViewfinder(float AxisValue)

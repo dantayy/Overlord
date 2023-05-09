@@ -23,6 +23,11 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	
+	FTimerHandle GameOverHandle;
+	
+	UFUNCTION()
+	void ClearTimer(AActor* Timer);
 
 public:	
 	// Called every frame

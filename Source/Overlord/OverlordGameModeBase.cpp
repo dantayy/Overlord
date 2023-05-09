@@ -46,6 +46,11 @@ void AOverlordGameModeBase::BeginPlay()
             break;
         }
     }
+
+    // set up game over UI
+    if (IsValid(GameOverClass) && !GameOverWidget) {
+        GameOverWidget = CreateWidget(GetWorld(), GameOverClass);
+    }
 }
 
 void AOverlordGameModeBase::HostileDestroyed(AActor* DestroyedActor)
@@ -65,6 +70,10 @@ void AOverlordGameModeBase::HostileDestroyed(AActor* DestroyedActor)
             if (LevelIterator == Levels.Num()) {
                 return;
             }
+        }
+        // close the game over widget if it exists
+        if (GameOverWidget) {
+            GameOverWidget->RemoveFromViewport();
         }
         // open level with given name at index pointed to by level iterator
         UGameplayStatics::OpenLevel(GetWorld(), Levels[LevelIterator]);
