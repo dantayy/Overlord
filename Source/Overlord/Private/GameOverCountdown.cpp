@@ -32,10 +32,10 @@ void AGameOverCountdown::BeginPlay()
 					false);
 	}
 	// clear the timer when this is destroyed (when the level is ended)
-	this->OnDestroyed.AddDynamic(this, &AGameOverCountdown::ClearTimer);
+	this->OnEndPlay.AddDynamic(this, &AGameOverCountdown::ClearTimer);
 }
 
-void AGameOverCountdown::ClearTimer(AActor* Timer)
+void AGameOverCountdown::ClearTimer(AActor* Timer, EEndPlayReason::Type EndPlayReason)
 {
 	GetWorldTimerManager().ClearTimer(GameOverHandle);
 }

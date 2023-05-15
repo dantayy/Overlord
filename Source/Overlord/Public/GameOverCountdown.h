@@ -27,7 +27,7 @@ protected:
 	FTimerHandle GameOverHandle;
 	
 	UFUNCTION()
-	void ClearTimer(AActor* Timer);
+	void ClearTimer(AActor* Timer, EEndPlayReason::Type EndPlayReason);
 
 public:	
 	// Called every frame
